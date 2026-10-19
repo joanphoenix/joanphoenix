@@ -1,0 +1,148 @@
+--- a/src/combat/CombatCheck.py
++++ b/src/combat/CombatCheck.py
+@@ -1,7 +1,11 @@
+ import re
++import sys
+ import time
+ 
+-import win32api
++if sys.platform == 'win32':
++    import win32api
++else:
++    win32api = None
+ 
+ from ok import find_boxes_by_name, Logger, calculate_color_percentage
+ from ok import find_color_rectangles, get_mask_in_color_range, is_pure_black
+@@ -222,14 +226,20 @@
+         if not levitator:
+             self.send_key_up(self.key_config.get('Wheel Key'))
+             raise Exception('no levitator tool in the tab wheel!')
+-        old = win32api.GetCursorPos()
+-        self.move(levitator.x, levitator.y)
+-        abs_pos = self.executor.interaction.capture.get_abs_cords(levitator.x, levitator.y)
+-        win32api.SetCursorPos(abs_pos)
+-        self.sleep(0.1)
+-        self.send_key_up(self.key_config.get('Wheel Key'))
++        old = win32api.GetCursorPos() if win32api is not None else None
++        try:
++            # Native macOS input owns its coordinate conversion and foreground
++            # checks. Keep the extra Windows cursor warp only on Windows.
++            self.move(levitator.x, levitator.y)
++            if win32api is not None:
++                abs_pos = self.executor.interaction.capture.get_abs_cords(levitator.x, levitator.y)
++                win32api.SetCursorPos(abs_pos)
++            self.sleep(0.1)
++        finally:
++            self.send_key_up(self.key_config.get('Wheel Key'))
+         self.sleep(0.2)
+-        win32api.SetCursorPos(old)
++        if old is not None:
++            win32api.SetCursorPos(old)
+         if not self.wait_feature('edge_levitator', threshold=0.6, time_out=1):
+             if self.has_char(Roccia):
+                 if self.find_one('levitator_roccia', threshold=0.6):
+@@ -423,3 +433,4 @@
+     'g': (148, 185),  # Green range
+     'b': (22, 62)  # Blue range
+ }
++
+--- a/src/task/BaseWWTask.py
++++ b/src/task/BaseWWTask.py
+@@ -975,6 +975,8 @@
+ 
+     @property
+     def game_lang(self):
++        if language := og.config.get('macos_game_language'):
++            return language
+         if '鸣潮' in self.hwnd_title or self.is_browser():
+             return 'zh_CN'
+         elif 'Wuthering' in self.hwnd_title:
+@@ -1336,3 +1338,4 @@
+     # cv2.THRESH_BINARY is the type of thresholding we want.
+     _, binary_image = cv2.threshold(gray_image, threshold, 255, cv2.THRESH_BINARY)
+     return binary_image
++
+--- a/src/task/ChangeEchoTask.py
++++ b/src/task/ChangeEchoTask.py
+@@ -1,10 +1,8 @@
+ # ChangeEchoTask.py
+ import re
+ import time
+-import os
+-
+-
+ from ok import FindFeature, Logger
++from src.platform_utils import open_folder
+ from src.scene.WWScene import WWScene
+ from src.task.BaseWWTask import BaseWWTask
+ 
+@@ -56,7 +54,7 @@
+                               notify=True)
+                 if self.info_get('成功声骸数量') >= 1:
+                     try:
+-                        os.startfile(os.path.abspath("screenshots"))
++                        open_folder('screenshots')
+                     except Exception as e:
+                         self.log_error(f"无法打开截图文件夹: {e}")
+                 return
+@@ -94,3 +92,4 @@
+         while not self.find_echo_enhance() and time.time() - start < 5:
+             self.send_key('esc', after_sleep=1)
+         self.sleep(0.1)
++
+--- a/src/task/EnhanceEchoTask.py
++++ b/src/task/EnhanceEchoTask.py
+@@ -1,11 +1,11 @@
+ # EnhanceEchoTask.py
+ import re
+ import time
+-import os
+ 
+ from ok import FindFeature, Logger
+ from ok.feature.Box import get_bounding_box
+ from ok.util.file import clear_folder
++from src.platform_utils import open_folder
+ from src.scene.WWScene import WWScene
+ from src.task.BaseWWTask import BaseWWTask
+ 
+@@ -82,7 +82,7 @@
+                               notify=True)
+                 if self.info_get('成功声骸数量') >= 1:
+                     try:
+-                        os.startfile(os.path.abspath("screenshots"))
++                        open_folder('screenshots')
+                     except Exception as e:
+                         self.log_error(f"无法打开截图文件夹: {e}")
+                 return
+@@ -348,3 +348,4 @@
+         return float(text.replace('％', '%').split('%')[0])
+     except (ValueError, IndexError):
+         return 0.0
++
+--- a/src/task/WWOneTimeTask.py
++++ b/src/task/WWOneTimeTask.py
+@@ -1,12 +1,18 @@
+-from ok import BrowserInteraction, PostMessageInteraction
+-from src.task.MouseResetTask import MouseResetTask
++import sys
++
++if sys.platform == 'win32':
++    from ok import PostMessageInteraction
++    from src.task.MouseResetTask import MouseResetTask
+ 
+ 
+ class WWOneTimeTask:
+ 
+     def run(self):
+-        mouse_reset_task = self.executor.get_task_by_class(MouseResetTask)
+-        mouse_reset_task.run()
+-        if isinstance(self.executor.interaction, PostMessageInteraction):
+-            self.executor.interaction.activate()
++        if sys.platform == 'win32':
++            mouse_reset_task = self.executor.get_task_by_class(MouseResetTask)
++            if mouse_reset_task is not None:
++                mouse_reset_task.run()
++            if isinstance(self.executor.interaction, PostMessageInteraction):
++                self.executor.interaction.activate()
+         self.sleep(0.5)
++

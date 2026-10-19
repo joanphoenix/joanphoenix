@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+configs-macos/
+cache/
+logs/
+screenshots/

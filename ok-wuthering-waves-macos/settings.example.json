@@ -1,0 +1,15 @@
+{
+  "globals": {
+    "Game Hotkey": {
+      "Echo Key": "q",
+      "Liberation Key": "r",
+      "Resonance Key": "e",
+      "Dodge Key": "lshift"
+    }
+  },
+  "tasks": {
+    "FarmEchoTask": {
+      "Repeat Farm Count": 1
+    }
+  }
+}
