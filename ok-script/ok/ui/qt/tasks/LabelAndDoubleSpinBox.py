@@ -2,7 +2,7 @@ from qfluentwidgets import DoubleSpinBox
 
 from ok.ui.qt.common.design_system import DesignToken
 from ok.ui.qt.tasks.ConfigLabelAndWidget import ConfigLabelAndWidget
-from ok.ui.qt.tasks.LabelAndSpinBox import fix_spinbox_layout
+from ok.ui.qt.tasks.LabelAndSpinBox import fix_spinbox_layout, _SpinBoxFocusFilter
 
 
 class LabelAndDoubleSpinBox(ConfigLabelAndWidget):
@@ -11,6 +11,8 @@ class LabelAndDoubleSpinBox(ConfigLabelAndWidget):
         super().__init__(config_desc, config, key)
         self.key = key
         self.spin_box = DoubleSpinBox()
+        self._focus_filter = _SpinBoxFocusFilter(self.spin_box)
+        self.spin_box.lineEdit().installEventFilter(self._focus_filter)
         self.update_value()
         self.spin_box.valueChanged.connect(self.value_changed)
         self.spin_box.setFixedWidth(DesignToken.CONTROL_WIDTH)

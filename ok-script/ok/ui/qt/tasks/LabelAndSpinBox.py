@@ -1,5 +1,7 @@
-from PySide6.QtCore import QObject, QEvent, QTimer, QRect
+from PySide6.QtCore import QObject, QEvent, QTimer
+from PySide6.QtWidgets import QSpinBox
 from qfluentwidgets import SpinBox
+from qfluentwidgets.components.widgets.spin_box import CompactSpinBox
 
 from ok.ui.qt.common.design_system import DesignToken
 from ok.ui.qt.tasks.ConfigLabelAndWidget import ConfigLabelAndWidget
@@ -7,18 +9,20 @@ from ok.ui.qt.tasks.ConfigLabelAndWidget import ConfigLabelAndWidget
 
 def fix_spinbox_layout(spin_box):
     """Fix macOS Qt QStyleSheetStyle bug where QAbstractSpinBox shrinks lineEdit to 1px."""
-    def _update_geom():
-        w = spin_box.width() if spin_box.width() > 1 else DesignToken.CONTROL_WIDTH
-        h = spin_box.height() if spin_box.height() > 1 else 33
-        spin_box.lineEdit().setGeometry(QRect(10, 1, max(10, w - 85), max(10, h - 2)))
-
-    orig_resize = spin_box.resizeEvent
-    def resize_event(e):
-        orig_resize(e)
-        _update_geom()
-
-    spin_box.resizeEvent = resize_event
-    _update_geom()
+    spin_box.setButtonSymbols(QSpinBox.UpDownArrows)
+    spin_box.setStyleSheet(spin_box.styleSheet() + """
+        QAbstractSpinBox::up-button, QAbstractSpinBox::down-button,
+        SpinBox::up-button, SpinBox::down-button,
+        DoubleSpinBox::up-button, DoubleSpinBox::down-button,
+        CompactSpinBox::up-button, CompactSpinBox::down-button,
+        CompactDoubleSpinBox::up-button, CompactDoubleSpinBox::down-button {
+            width: 0px;
+            height: 0px;
+            border: none;
+        }
+    """)
+    rm = 30 if isinstance(spin_box, CompactSpinBox) else 80
+    spin_box.lineEdit().setTextMargins(10, 0, rm, 0)
 
 
 class _SpinBoxFocusFilter(QObject):

@@ -1,6 +1,7 @@
 from qfluentwidgets import SpinBox
 
 from ok.ui.qt.tasks.ConfigLabelAndWidget import ConfigLabelAndWidget
+from ok.ui.qt.tasks.LabelAndSpinBox import fix_spinbox_layout
 
 
 class LabelAndDoubleSpinBox(ConfigLabelAndWidget):
@@ -13,6 +14,7 @@ class LabelAndDoubleSpinBox(ConfigLabelAndWidget):
         self.spin_box.setValue(self.config[self.key])
         self.spin_box.valueChanged.connect(self.value_changed)
         self.add_widget(self.spin_box)
+        fix_spinbox_layout(self.spin_box)
 
     def value_changed(self, value):
         self.config[self.key] = value
