@@ -356,6 +356,11 @@ class WindowsScheduleManager:
     def _init_com_service(self):
         """初始化 COM 服务"""
         logger.info(f"Initializing Windows Task Scheduler COM service, root={self.SCHEDULE_ROOT_PATH}")
+        if os.name != 'nt':
+            logger.info("Non-Windows OS: Windows Task Scheduler is not available on this platform")
+            self.SCHEDULE_SERVICE = None
+            return
+
         try:
             import win32com.client
 
@@ -436,6 +441,11 @@ class WindowsScheduleManager:
     def _query_tasks_via_com(self) -> List[ScheduleTaskInfo]:
         """通过 COM API 查询任务"""
         tasks = []
+        if os.name != 'nt':
+            logger.info("Non-Windows OS: Windows Task Scheduler is not available on this platform")
+            self.SCHEDULE_SERVICE = None
+            return
+
         try:
             import win32com.client
 
@@ -611,6 +621,8 @@ class WindowsScheduleManager:
     def _query_tasks_via_schtasks(self) -> List[ScheduleTaskInfo]:
         """通过 schtasks 命令查询任务（降级方案）"""
         tasks = []
+        if os.name != 'nt':
+            return tasks
         try:
             # 使用 CSV 格式输出
             cmd = [
@@ -962,6 +974,11 @@ class WindowsScheduleManager:
                              interval_hours: int = 0,
                              task_identifier: Optional[str] = None) -> bool:
         """通过 COM API 创建任务"""
+        if os.name != 'nt':
+            logger.info("Non-Windows OS: Windows Task Scheduler is not available on this platform")
+            self.SCHEDULE_SERVICE = None
+            return
+
         try:
             import win32com.client
 

@@ -7,17 +7,17 @@ StatusBar {
 QLabel {
     color: black;
     background-color: transparent;
-    font-family: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC';
+    font-family: -apple-system, '.AppleSystemUIFont', 'PingFang SC', 'Segoe UI', 'Microsoft YaHei';
     border: none;
 }
 
 QLabel#titleLabel {
     color: white;
-    font: 14px 'Segoe UI', 'Microsoft YaHei', 'PingFang SC';
+    font: 14px -apple-system, '.AppleSystemUIFont', 'PingFang SC', 'Segoe UI', 'Microsoft YaHei';
     font-weight: bold;
 }
 
 QLabel#contentLabel {
     color: rgb(208, 208, 208);
-    font: 12px 'Segoe UI', 'Microsoft YaHei', 'PingFang SC';
+    font: 12px -apple-system, '.AppleSystemUIFont', 'PingFang SC', 'Segoe UI', 'Microsoft YaHei';
 }

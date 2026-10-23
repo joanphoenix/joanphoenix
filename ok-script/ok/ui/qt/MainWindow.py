@@ -1,4 +1,5 @@
 import os
+import sys
 import threading
 
 import pyappify
@@ -78,6 +79,21 @@ class MainWindow(FluentWindow):
     def __init__(self, app, config, ok_config, icon, title, version, debug=False, about=None, exit_event=None,
                  global_config=None, executor=None, handler=None):
         super().__init__()
+        if sys.platform == 'darwin':
+            # Offset titlebar content so native traffic lights (close/min/zoom at x=9..63)
+            # do not collide with icon and window title
+            self.titleBar.hBoxLayout.setContentsMargins(36, 0, 0, 0)
+            if hasattr(self.titleBar, 'minBtn'):
+                self.titleBar.minBtn.hide()
+            if hasattr(self.titleBar, 'maxBtn'):
+                self.titleBar.maxBtn.hide()
+            if hasattr(self.titleBar, 'closeBtn'):
+                self.titleBar.closeBtn.hide()
+
+            from PySide6.QtGui import QGuiApplication
+            QGuiApplication.styleHints().colorSchemeChanged.connect(lambda _: self._schedule_system_theme_change())
+            QApplication.instance().applicationStateChanged.connect(self._on_macos_application_state_changed)
+
         # Page pop transitions move scroll-area contents vertically and can show
         # a brief top/bottom flash when switching navigation tabs.
         self.stackedWidget.setAnimationEnabled(False)
@@ -281,7 +297,108 @@ class MainWindow(FluentWindow):
         communicate.starting_emulator.connect(self.starting_emulator)
         communicate.global_config.connect(self.goto_global_config)
 
+        if sys.platform == 'darwin':
+            self._setup_macos_menu_bar()
+
         logger.info('main window __init__ done')
+
+    def _setup_macos_menu_bar(self):
+        """Create native macOS menu bar with standard roles, Cmd shortcuts, and tab navigation."""
+        if sys.platform != 'darwin':
+            return
+        from PySide6.QtWidgets import QMenuBar
+        from PySide6.QtGui import QAction, QKeySequence
+
+        self._macos_menu_bar = QMenuBar()
+
+        # 1. Application Menu (About, Preferences, Quit)
+        app_menu = self._macos_menu_bar.addMenu(self.config.get('gui_title') or "OK-WW")
+
+        about_action = QAction(self.tr("About"), self)
+        about_action.setMenuRole(QAction.AboutRole)
+        about_action.triggered.connect(lambda: self.navigate_tab("about"))
+        app_menu.addAction(about_action)
+
+        app_menu.addSeparator()
+
+        pref_action = QAction(self.tr("Preferences..."), self)
+        pref_action.setMenuRole(QAction.PreferencesRole)
+        pref_action.setShortcut(QKeySequence.Preferences)  # Cmd+,
+        pref_action.triggered.connect(lambda: self.switchTo(self.setting_tab))
+        app_menu.addAction(pref_action)
+
+        app_menu.addSeparator()
+
+        quit_action = QAction(self.tr("Quit"), self)
+        quit_action.setMenuRole(QAction.QuitRole)
+        quit_action.setShortcut(QKeySequence.Quit)  # Cmd+Q
+        quit_action.triggered.connect(self.tray_quit)
+        app_menu.addAction(quit_action)
+
+        # 2. Navigate Menu
+        nav_menu = self._macos_menu_bar.addMenu(self.tr("Navigate"))
+
+        nav_capture = QAction(self.tr("Capture"), self)
+        nav_capture.setShortcut(QKeySequence("Ctrl+1"))
+        nav_capture.triggered.connect(lambda: self.navigate_tab("start"))
+        nav_menu.addAction(nav_capture)
+
+        if self.onetime_tab is not None or self.grouped_task_tabs:
+            nav_tasks = QAction(self.tr("Tasks"), self)
+            nav_tasks.setShortcut(QKeySequence("Ctrl+2"))
+            nav_tasks.triggered.connect(lambda: self.navigate_tab("onetime"))
+            nav_menu.addAction(nav_tasks)
+
+        if self.trigger_tab is not None:
+            nav_triggers = QAction(self.tr("Triggers"), self)
+            nav_triggers.setShortcut(QKeySequence("Ctrl+3"))
+            nav_triggers.triggered.connect(lambda: self.navigate_tab("trigger"))
+            nav_menu.addAction(nav_triggers)
+
+        if self.schedule_tab is not None:
+            nav_schedule = QAction(self.tr("Schedule"), self)
+            nav_schedule.setShortcut(QKeySequence("Ctrl+4"))
+            nav_schedule.triggered.connect(lambda: self.navigate_tab("schedule"))
+            nav_menu.addAction(nav_schedule)
+
+        nav_settings = QAction(self.tr("Settings"), self)
+        nav_settings.setShortcut(QKeySequence("Ctrl+5"))
+        nav_settings.triggered.connect(lambda: self.switchTo(self.setting_tab))
+        nav_menu.addAction(nav_settings)
+
+        # 3. Window Menu
+        window_menu = self._macos_menu_bar.addMenu(self.tr("Window"))
+
+        close_action = QAction(self.tr("Close Window"), self)
+        close_action.setShortcut(QKeySequence.Close)  # Cmd+W
+        close_action.triggered.connect(self.close)
+        window_menu.addAction(close_action)
+
+        min_action = QAction(self.tr("Minimize"), self)
+        min_action.setShortcut(QKeySequence("Ctrl+M"))
+        min_action.triggered.connect(self.showMinimized)
+        window_menu.addAction(min_action)
+
+        zoom_action = QAction(self.tr("Zoom"), self)
+        zoom_action.triggered.connect(self._toggle_zoom)
+        window_menu.addAction(zoom_action)
+
+        window_menu.addSeparator()
+
+        front_action = QAction(self.tr("Bring All to Front"), self)
+        front_action.triggered.connect(self.bring_to_front)
+        window_menu.addAction(front_action)
+
+    def _toggle_zoom(self):
+        if self.isMaximized():
+            self.showNormal()
+        else:
+            self.showMaximized()
+
+    def _on_macos_application_state_changed(self, state):
+        if state == Qt.ApplicationActive:
+            if not self.isVisible() or self.isMinimized():
+                self.bring_to_front()
 
     def _set_about_update_available(self, available):
         if available and self.about_update_badge is None:
@@ -331,15 +448,38 @@ class MainWindow(FluentWindow):
             logger.exception('Failed to read the Windows system accent color')
             return None
 
+    @staticmethod
+    def _get_macos_accent_color():
+        """Return the native macOS system accent color."""
+        try:
+            import Cocoa
+            color = Cocoa.NSColor.controlAccentColor().colorUsingColorSpace_(Cocoa.NSColorSpace.sRGBColorSpace())
+            if color:
+                r = int(color.redComponent() * 255)
+                g = int(color.greenComponent() * 255)
+                b = int(color.blueComponent() * 255)
+                return QColor(r, g, b)
+        except Exception as e:
+            logger.debug(f'Failed to get macOS accent color: {e}')
+        return None
+
     def get_system_accent_color(self):
-        """Return the base Windows accent color (legacy helper)."""
+        """Return the base system accent color."""
+        if sys.platform == 'darwin':
+            return self._get_macos_accent_color()
         return self._get_dwm_accent_color()
 
     def get_system_primary_theme_color(self):
-        """Return a qfluent source color matching the Windows primary fill."""
+        """Return a qfluent source color matching the system primary fill."""
+        dark = isDarkTheme()
+        if sys.platform == 'darwin':
+            mac_color = self._get_macos_accent_color()
+            if mac_color is not None:
+                r, g, b = qfluent_theme_source_color(mac_color.red(), mac_color.green(), mac_color.blue(), dark)
+                return QColor(r, g, b)
+            return None
         if os.name != 'nt':
             return None
-        dark = isDarkTheme()
         try:
             from ok.rotypes.Windows.UI.ViewManagement import UIColorType, get_color_value
 
@@ -522,7 +662,13 @@ class MainWindow(FluentWindow):
         self.activateWindow()
         if self.windowHandle():
             self.windowHandle().requestActivate()
-        if os.name == 'nt':
+        if sys.platform == 'darwin':
+            try:
+                import Cocoa
+                Cocoa.NSApp.activateIgnoringOtherApps_(True)
+            except Exception as e:
+                logger.debug(f'bring_to_front macOS native activation failed: {e}')
+        elif os.name == 'nt':
             try:
                 import win32con
                 import win32gui
@@ -655,8 +801,12 @@ class MainWindow(FluentWindow):
         )
 
     def eventFilter(self, obj, event):
-        if event.type() == QEvent.Resize or event.type() == QEvent.Move:
-            self.handler.post(self.update_ok_config, remove_existing=True, skip_if_running=True, delay=1)
+        try:
+            event_type = event.type()
+            if event_type == QEvent.Resize or event_type == QEvent.Move:
+                self.handler.post(self.update_ok_config, remove_existing=True, skip_if_running=True, delay=1)
+        except Exception:
+            pass
         return super().eventFilter(obj, event)
 
     def update_ok_config(self):

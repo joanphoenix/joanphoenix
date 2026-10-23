@@ -1,8 +1,9 @@
 import sys
 
 from PySide6.QtCore import Qt, QTranslator, QCoreApplication
+from PySide6.QtGui import QGuiApplication, QFont
 from PySide6.QtWidgets import QApplication
-from qfluentwidgets import FluentTranslator, InfoBar, InfoBarPosition, setTheme
+from qfluentwidgets import FluentTranslator, InfoBar, InfoBarPosition, setTheme, setFontFamilies
 
 from ok import Logger
 from ok.ui.qt import resources
@@ -15,12 +16,43 @@ def init_app_config():
     logger.debug(
         f'resources.qt_resource_name {resources.qt_resource_name} cfg.themeMode')
 
-    app = QApplication(sys.argv)
-    app.setHighDpiScaleFactorRoundingPolicy(
+    # Qt High DPI rounding policy must be set before QApplication instantiation
+    QGuiApplication.setHighDpiScaleFactorRoundingPolicy(
         Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+
+    if sys.platform == "darwin":
+        # Native Apple typography mapping: eliminate Segoe UI / Consolas fallback delay & warnings
+        mac_fonts = ['.AppleSystemUIFont', 'PingFang SC', 'Helvetica Neue', 'Arial']
+        setFontFamilies(mac_fonts)
+        QFont.insertSubstitutions('Segoe UI', mac_fonts)
+        QFont.insertSubstitutions('Segoe UI SemiBold', ['.AppleSystemUIFont', 'PingFang SC', 'Helvetica Neue'])
+        QFont.insertSubstitutions('Microsoft YaHei', ['PingFang SC', 'Hiragino Sans GB', 'Heiti SC'])
+        QFont.insertSubstitutions('Consolas', ['Menlo', 'Monaco', 'Courier New'])
+        QFont.insertSubstitutions('Courier', ['Menlo', 'Monaco', 'Courier New'])
+
+        # Hook qfluentwidgets stylesheet loader to inject native Apple fonts
+        import qfluentwidgets.common.style_sheet as qss_mod
+        orig_get_stylesheet = qss_mod.getStyleSheetFromFile
+
+        def mac_get_stylesheet_from_file(file):
+            qss = orig_get_stylesheet(file)
+            qss = qss.replace("'Segoe UI'", "'.AppleSystemUIFont', 'PingFang SC'")
+            qss = qss.replace('"Segoe UI"', "'.AppleSystemUIFont', 'PingFang SC'")
+            qss = qss.replace("'Segoe UI SemiBold'", "'.AppleSystemUIFont', 'PingFang SC'")
+            qss = qss.replace('"Segoe UI SemiBold"', "'.AppleSystemUIFont', 'PingFang SC'")
+            qss = qss.replace("'Consolas'", "'Menlo', 'Monaco'")
+            qss = qss.replace('"Consolas"', "'Menlo', 'Monaco'")
+            return qss
+
+        qss_mod.getStyleSheetFromFile = mac_get_stylesheet_from_file
+
+    app = QApplication(sys.argv)
     app.setAttribute(Qt.AA_EnableHighDpiScaling)
     app.setAttribute(Qt.AA_UseHighDpiPixmaps)
     app.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings)
+
+    if sys.platform == "darwin":
+        app.setFont(QFont('.AppleSystemUIFont', 13))
 
     locale = cfg.get(cfg.language).value
     translator = FluentTranslator(locale)

@@ -261,7 +261,7 @@ def _register_task_xml(path: str, new_xml: str) -> bool:
     优先 COM（RegisterTaskDefinition CREATE_OR_UPDATE），失败时回退 schtasks。
     返回是否注册成功；path 或 new_xml 为空时返回 False。
     """
-    if not path or not new_xml:
+    if os.name != "nt" or not path or not new_xml:
         return False
     pythoncom = None
     try:

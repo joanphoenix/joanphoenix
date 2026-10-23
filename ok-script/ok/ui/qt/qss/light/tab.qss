@@ -38,7 +38,7 @@ Card > #card:hover {
 }
 
 Card > #card QLabel {
-    font: 14px 'Segoe UI', 'Microsoft YaHei', 'PingFang SC';
+    font: 14px -apple-system, '.AppleSystemUIFont', 'PingFang SC', 'Segoe UI', 'Microsoft YaHei';
     color: black;
 }
 
@@ -55,18 +55,18 @@ Card> #card InfoBadge {
 
 #titleLabel {
     color: black;
-    font: 14px 'Segoe UI', 'Microsoft YaHei', 'PingFang SC';
+    font: 14px -apple-system, '.AppleSystemUIFont', 'PingFang SC', 'Segoe UI', 'Microsoft YaHei';
     font-weight: bold;
 }
 
 #contentLabel {
     color: rgb(118, 118, 118);
-    font: 12px 'Segoe UI', 'Microsoft YaHei', 'PingFang SC';
+    font: 12px -apple-system, '.AppleSystemUIFont', 'PingFang SC', 'Segoe UI', 'Microsoft YaHei';
 }
 
 #viewTitleLabel {
     color: black;
-    font: 24px "Segoe UI SemiBold", "Microsoft YaHei", 'PingFang SC';
+    font: 24px -apple-system, '.AppleSystemUIFont', 'PingFang SC', "Segoe UI SemiBold", "Microsoft YaHei";
 }
 
 #configContentFrame {

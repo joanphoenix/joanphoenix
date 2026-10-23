@@ -1,5 +1,5 @@
 :root {
-  font-family: "Segoe UI Variable", "Segoe UI", "Microsoft YaHei UI", system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable", "Segoe UI", "Microsoft YaHei UI", system-ui, sans-serif;
   /* The desktop shell is scaled as a unit below, so keep its internal type
      metrics stable instead of tying them to Edge's sometimes huge viewport. */
   font-size: 20px;

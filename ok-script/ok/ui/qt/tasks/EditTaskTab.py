@@ -1,4 +1,5 @@
 import os
+import sys
 
 from PySide6.QtCore import QFileSystemWatcher, QUrl
 from PySide6.QtCore import Qt, QSize, QRect
@@ -265,7 +266,7 @@ class EditTaskTab(QWidget):
         self.right_container_layout.setContentsMargins(0, 0, 0, 0)
         
         self.editor = CodeEditor()
-        self.editor.setFont(QFont("Courier", 10))
+        self.editor.setFont(QFont("Menlo" if sys.platform == "darwin" else "Courier", 10))
         self.highlighter = PythonHighlighter(self.editor.document())
 
         self.top_layout = QHBoxLayout()

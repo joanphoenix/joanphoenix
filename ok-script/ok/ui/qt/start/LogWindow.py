@@ -2,6 +2,7 @@ import codecs
 import html
 import os
 import re
+import sys
 from pathlib import Path
 
 from PySide6.QtCore import QFileSystemWatcher, QTimer, Qt
@@ -96,7 +97,7 @@ class LogWindow(FluentWindow):
         self.log_edit.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
         self.log_edit.setAcceptRichText(True)
         self.log_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        font = QFont("Consolas")
+        font = QFont("Menlo" if sys.platform == "darwin" else "Consolas")
         font.setStyleHint(QFont.Monospace)
         font.setPointSize(10)
         self.log_edit.setFont(font)
@@ -383,7 +384,7 @@ class LogWindow(FluentWindow):
         body = "\n".join(lines)
         return (
             "<html><head><style>"
-            "body { margin: 0; white-space: pre; font-family: Consolas, 'Cascadia Mono', monospace; "
+            "body { margin: 0; white-space: pre; font-family: Menlo, Monaco, Consolas, monospace; "
             f"font-size: 10pt; background: {palette['background']}; color: {palette['text']}; }}"
             "::selection { background: #2f65ca; color: #ffffff; }"
             "</style></head><body>"
@@ -443,7 +444,7 @@ class LogWindow(FluentWindow):
                 background: {palette["surface"]};
                 border-top: 1px solid {palette["border"]};
                 padding: 4px 10px;
-                font: 12px 'Segoe UI', 'Microsoft YaHei', 'PingFang SC';
+                font: 12px -apple-system, '.AppleSystemUIFont', 'PingFang SC', 'Segoe UI', 'Microsoft YaHei';
             }}
         """)
         self._render_logs()
