@@ -12,16 +12,18 @@ class LabelAndDropDown(ConfigLabelAndWidget):
     def __init__(self, config_desc, options, config, key: str):
         super().__init__(config_desc, config, key)
         self.key = key
+        self.options = options
         self.tr_dict = {}
         self.tr_options = []
         for option in options:
-            tr = og.app.tr(option)
+            tr = og.app.tr(str(option))
             self.tr_options.append(tr)
             self.tr_dict[tr] = option
 
         self.combo_box = ComboBox()
         self.combo_box.addItems(self.tr_options)
-        self.combo_box.setCurrentIndex(find_index_in_list(options, self.config.get(self.key), -1))
+        init_idx = find_index_in_list(options, self.config.get(self.key), 0)
+        self.combo_box.setCurrentIndex(init_idx)
 
         fm = QFontMetrics(self.combo_box.font())
         max_width = 0
@@ -40,6 +42,10 @@ class LabelAndDropDown(ConfigLabelAndWidget):
         self.update_config(option)
 
     def update_value(self):
-        tr = og.app.tr(self.config.get(self.key))
-        self.combo_box.setText(tr)
-        self.combo_box.setCurrentIndex(find_index_in_list(self.tr_options, tr, -1))
+        val = self.config.get(self.key)
+        tr = og.app.tr(str(val) if val is not None else "")
+        idx = find_index_in_list(self.tr_options, tr, -1)
+        if idx == -1:
+            idx = find_index_in_list(self.options, val, 0)
+        if idx != -1 and idx < len(self.tr_options):
+            self.combo_box.setCurrentIndex(idx)

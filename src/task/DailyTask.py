@@ -4,11 +4,11 @@ import re
 from ok import Logger, TaskDisabledException
 from src.task.BaseWWTask import number_re
 from src.task.FarmEchoTask import FarmEchoTask
-from src.task.ForgeryTask import ForgeryTask
+from src.task.ForgeryTask import ForgeryTask, FORGERY_CHALLENGES
 from src.task.GardenTask import GardenTask
 from src.task.MergeEchoTask import MergeEchoTask
 from src.task.NightmareNestTask import NightmareNestTask
-from src.task.TacetTask import TacetTask
+from src.task.TacetTask import TacetTask, TACET_SUPPRESSIONS
 from src.task.SimulationTask import SimulationTask
 from src.task.WWOneTimeTask import WWOneTimeTask
 from src.task.BaseCombatTask import BaseCombatTask
@@ -31,15 +31,15 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
         self.support_tasks = ["Tacet Suppression", "Forgery Challenge", "Simulation Challenge"]
         self.default_config = {
             'Which to Farm': self.support_tasks[0],
-            'Which Tacet Suppression to Farm': 1,  # starts with 1
-            'Which Forgery Challenge to Farm': 1,  # starts with 1
+            'Which Tacet Suppression to Farm': TACET_SUPPRESSIONS[0],
+            'Which Forgery Challenge to Farm': FORGERY_CHALLENGES[0],
             'Material Selection': 'Shell Credit',
             'Farm Nightmare Nest for Daily Echo': True,
             ADDITIONAL_TASKS: [CHECK_WEEKLY_GARDEN],
         }
         self.config_description = {
-            'Which Tacet Suppression to Farm': 'The Tacet Suppression number in the F2 list.',
-            'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
+            'Which Tacet Suppression to Farm': 'Select the Tacet Suppression from the F2 list (1-21).',
+            'Which Forgery Challenge to Farm': 'Select the Forgery Challenge from the F2 list (1-20).',
             'Material Selection': 'Resonator EXP / Weapon EXP / Shell Credit',
             'Farm Nightmare Nest for Daily Echo': 'Farm 1 Echo from Nightmare Nest to complete Daily Task when needed.',
             ADDITIONAL_TASKS: 'Select optional tasks. Nightmare Nest runs before stamina farming to help complete '
@@ -56,6 +56,14 @@ class DailyTask(WWOneTimeTask, BaseCombatTask):
                     'Simulation Challenge': [
                         'Material Selection'],
                 }
+            },
+            'Which Tacet Suppression to Farm': {
+                'type': 'drop_down',
+                'options': TACET_SUPPRESSIONS,
+            },
+            'Which Forgery Challenge to Farm': {
+                'type': 'drop_down',
+                'options': FORGERY_CHALLENGES,
             },
             'Material Selection': {
                 'type': 'drop_down',

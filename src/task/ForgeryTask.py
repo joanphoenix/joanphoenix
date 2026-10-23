@@ -1,9 +1,33 @@
+import re
 import cv2
 
 from ok import Logger, find_color_rectangles
 from src.task.DomainTask import DomainTask
 
 logger = Logger.get_logger(__name__)
+
+FORGERY_CHALLENGES = [
+    "1 - Flaming Remnants (Metallic Drip / Sword)",
+    "2 - Eroded Ruins (Waveworn Residue / Broadblade)",
+    "3 - Marigold Woods (Cadence Seed / Pistol)",
+    "4 - Moonlit Groves (Phlogiston / Gauntlet)",
+    "5 - Misty Forest (Helix / Rectifier)",
+    "6 - Mt. Firmament #6 (Metallic Drip / Sword)",
+    "7 - Mt. Firmament #7 (Waveworn Residue / Broadblade)",
+    "8 - Mt. Firmament #8 (Cadence Seed / Pistol)",
+    "9 - Mt. Firmament #9 (Phlogiston / Gauntlet)",
+    "10 - Mt. Firmament #10 (Helix / Rectifier)",
+    "11 - Black Shores #11 (Metallic Drip / Sword)",
+    "12 - Black Shores #12 (Waveworn Residue / Broadblade)",
+    "13 - Black Shores #13 (Cadence Seed / Pistol)",
+    "14 - Black Shores #14 (Phlogiston / Gauntlet)",
+    "15 - Black Shores #15 (Helix / Rectifier)",
+    "16 - Rinascita #16 (Metallic Drip / Sword)",
+    "17 - Rinascita #17 (Waveworn Residue / Broadblade)",
+    "18 - Rinascita #18 (Cadence Seed / Pistol)",
+    "19 - Rinascita #19 (Phlogiston / Gauntlet)",
+    "20 - Rinascita #20 (Helix / Rectifier)",
+]
 
 
 class ForgeryTask(DomainTask):
@@ -14,10 +38,14 @@ class ForgeryTask(DomainTask):
         self.description = 'Farms the selected Forgery Challenge. Must be able to teleport (F2).'
         self.support_schedule_task = True
         self.default_config = {
-            'Which Forgery Challenge to Farm': 1,  # starts with 1
+            'Which Forgery Challenge to Farm': FORGERY_CHALLENGES[0],
+        }
+        self.config_type['Which Forgery Challenge to Farm'] = {
+            'type': 'drop_down',
+            'options': FORGERY_CHALLENGES,
         }
         self.config_description = {
-            'Which Forgery Challenge to Farm': 'The Forgery Challenge number in the F2 list.',
+            'Which Forgery Challenge to Farm': 'Select the Forgery Challenge from the F2 list (1-20).',
         }
         self.stamina_once = 40
         self.structure = [5, 5, 5, 5]
@@ -36,7 +64,15 @@ class ForgeryTask(DomainTask):
             must_use = 0
         if config is None:
             config = self.config
-        serial = config.get('Which Forgery Challenge to Farm', 1)
+        raw_serial = config.get('Which Forgery Challenge to Farm', 1)
+        if isinstance(raw_serial, str):
+            match = re.search(r'\d+', raw_serial)
+            serial = int(match.group(0)) if match else 1
+        else:
+            try:
+                serial = int(raw_serial)
+            except (ValueError, TypeError):
+                serial = 1
 
         def teleport_once():
             self.teleport_into_domain(serial, daily)

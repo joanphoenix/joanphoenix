@@ -1,8 +1,33 @@
+import re
 from ok import Logger
 from src.task.BaseCombatTask import BaseCombatTask, CharRevivedException
 from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
+
+TACET_SUPPRESSIONS = [
+    "1 - Desorock Highland (Sun-sinking Eclipse / Celestial Light)",
+    "2 - Central Plains (Sierra Gale / Molten Rift)",
+    "3 - Port City of Guixu (Molten Rift / Sun-sinking Eclipse)",
+    "4 - Whining Aix's Mire (Void Thunder / Celestial Light)",
+    "5 - Tiger's Maw (Freezing Frost / Molten Rift)",
+    "6 - Dim Forest (Sierra Gale / Void Thunder)",
+    "7 - Wuming Bay (Freezing Frost / Sierra Gale)",
+    "8 - Norfall Barrens (Sun-sinking Eclipse / Void Thunder)",
+    "9 - Central Plains II (Freezing Frost / Celestial Light)",
+    "10 - Mt. Firmament: Frostlands (Celestial Light / Freezing Frost)",
+    "11 - Mt. Firmament: Luminous (Sun-sinking Eclipse / Sierra Gale)",
+    "12 - Mt. Firmament: Memento (Void Thunder / Molten Rift)",
+    "13 - Black Shores #13",
+    "14 - Black Shores #14",
+    "15 - Black Shores #15",
+    "16 - Rinascita #16",
+    "17 - Rinascita #17",
+    "18 - Rinascita #18",
+    "19 - Rinascita #19",
+    "20 - Rinascita #20",
+    "21 - Rinascita #21",
+]
 
 
 class TacetTask(WWOneTimeTask, BaseCombatTask):
@@ -12,17 +37,19 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.description = "Farms the selected Tacet Suppression, until no stamina. Must be able to teleport (F2)."
         self.name = "🌊 Tacet Suppression"
         self.support_schedule_task = True
-        default_config = {
-            'Which Tacet Suppression to Farm': 1,  # starts with 1
-        }
         self.structure = [4, 5, 5, 7]
         self.total_number = sum(self.structure)
         self.target_enemy_time_out = 10
-        default_config.update(self.default_config)
-        self.config_description = {
-            'Which Tacet Suppression to Farm': 'The Tacet Suppression number in the F2 list.',
+        self.default_config = {
+            'Which Tacet Suppression to Farm': TACET_SUPPRESSIONS[0],
         }
-        self.default_config = default_config
+        self.config_type['Which Tacet Suppression to Farm'] = {
+            'type': 'drop_down',
+            'options': TACET_SUPPRESSIONS,
+        }
+        self.config_description = {
+            'Which Tacet Suppression to Farm': 'Select the Tacet Suppression from the F2 list (1-21).',
+        }
         self.door_walk_method = {  # starts with 0
             0: [],
             1: [],
@@ -66,7 +93,15 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                 return self.not_enough_stamina()
 
             self.open_boss_book('wuyin')
-            index = config.get('Which Tacet Suppression to Farm', 1) - 1
+            raw_target = config.get('Which Tacet Suppression to Farm', 1)
+            if isinstance(raw_target, str):
+                match = re.search(r'\d+', raw_target)
+                index = (int(match.group(0)) - 1) if match else 0
+            else:
+                try:
+                    index = int(raw_target) - 1
+                except (ValueError, TypeError):
+                    index = 0
             self.teleport_to_tacet(index)
             self.click_team_challenge()
             while True:

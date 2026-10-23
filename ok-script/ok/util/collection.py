@@ -16,8 +16,15 @@ def find_index_in_list(my_list, target_string, default_index=-1):
     try:
         index = my_list.index(target_string)
         return index
-    except ValueError:
-        return default_index
+    except (ValueError, TypeError):
+        pass
+    if target_string is not None:
+        target_str = str(target_string).strip()
+        for i, item in enumerate(my_list):
+            item_str = str(item).strip()
+            if item_str == target_str or item_str.startswith(f"{target_str} -") or item_str.startswith(f"{target_str}:"):
+                return i
+    return default_index
 
 
 def get_median(my_list):
