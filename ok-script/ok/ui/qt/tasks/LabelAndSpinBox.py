@@ -45,7 +45,14 @@ class LabelAndSpinBox(ConfigLabelAndWidget):
             try:
                 self.spin_box.setValue(int(val))
             except (ValueError, TypeError):
-                pass
+                if isinstance(val, str):
+                    import re
+                    m = re.search(r'\d+', val)
+                    if m:
+                        try:
+                            self.spin_box.setValue(int(m.group(0)))
+                        except Exception:
+                            pass
 
     def value_changed(self, value):
         self.update_config(value)

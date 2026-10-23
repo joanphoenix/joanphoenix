@@ -6,30 +6,6 @@ from src.task.DomainTask import DomainTask
 
 logger = Logger.get_logger(__name__)
 
-FORGERY_CHALLENGES = [
-    "1 - Flaming Remnants (Metallic Drip / Sword)",
-    "2 - Eroded Ruins (Waveworn Residue / Broadblade)",
-    "3 - Marigold Woods (Cadence Seed / Pistol)",
-    "4 - Moonlit Groves (Phlogiston / Gauntlet)",
-    "5 - Misty Forest (Helix / Rectifier)",
-    "6 - Mt. Firmament #6 (Metallic Drip / Sword)",
-    "7 - Mt. Firmament #7 (Waveworn Residue / Broadblade)",
-    "8 - Mt. Firmament #8 (Cadence Seed / Pistol)",
-    "9 - Mt. Firmament #9 (Phlogiston / Gauntlet)",
-    "10 - Mt. Firmament #10 (Helix / Rectifier)",
-    "11 - Black Shores #11 (Metallic Drip / Sword)",
-    "12 - Black Shores #12 (Waveworn Residue / Broadblade)",
-    "13 - Black Shores #13 (Cadence Seed / Pistol)",
-    "14 - Black Shores #14 (Phlogiston / Gauntlet)",
-    "15 - Black Shores #15 (Helix / Rectifier)",
-    "16 - Rinascita #16 (Metallic Drip / Sword)",
-    "17 - Rinascita #17 (Waveworn Residue / Broadblade)",
-    "18 - Rinascita #18 (Cadence Seed / Pistol)",
-    "19 - Rinascita #19 (Phlogiston / Gauntlet)",
-    "20 - Rinascita #20 (Helix / Rectifier)",
-]
-
-
 class ForgeryTask(DomainTask):
 
     def __init__(self, *args, **kwargs):
@@ -37,19 +13,20 @@ class ForgeryTask(DomainTask):
         self.name = '⚒️ Forgery Challenge'
         self.description = 'Farms the selected Forgery Challenge. Must be able to teleport (F2).'
         self.support_schedule_task = True
-        self.default_config = {
-            'Which Forgery Challenge to Farm': FORGERY_CHALLENGES[0],
-        }
-        self.config_type['Which Forgery Challenge to Farm'] = {
-            'type': 'drop_down',
-            'options': FORGERY_CHALLENGES,
-        }
-        self.config_description = {
-            'Which Forgery Challenge to Farm': 'Select the Forgery Challenge from the F2 list (1-20).',
-        }
-        self.stamina_once = 40
         self.structure = [5, 5, 5, 5]
         self.total_number = sum(self.structure)
+        self.default_config = {
+            'Which Forgery Challenge to Farm': 1,
+        }
+        self.config_type['Which Forgery Challenge to Farm'] = {
+            'type': 'int',
+            'min': 1,
+            'max': self.total_number,
+        }
+        self.config_description = {
+            'Which Forgery Challenge to Farm': f'The Forgery Challenge number in the F2 list (1-{self.total_number}).',
+        }
+        self.stamina_once = 40
         self.material_mat = None
 
     def run(self):

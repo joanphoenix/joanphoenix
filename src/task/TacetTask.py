@@ -5,31 +5,6 @@ from src.task.WWOneTimeTask import WWOneTimeTask
 
 logger = Logger.get_logger(__name__)
 
-TACET_SUPPRESSIONS = [
-    "1 - Desorock Highland (Sun-sinking Eclipse / Celestial Light)",
-    "2 - Central Plains (Sierra Gale / Molten Rift)",
-    "3 - Port City of Guixu (Molten Rift / Sun-sinking Eclipse)",
-    "4 - Whining Aix's Mire (Void Thunder / Celestial Light)",
-    "5 - Tiger's Maw (Freezing Frost / Molten Rift)",
-    "6 - Dim Forest (Sierra Gale / Void Thunder)",
-    "7 - Wuming Bay (Freezing Frost / Sierra Gale)",
-    "8 - Norfall Barrens (Sun-sinking Eclipse / Void Thunder)",
-    "9 - Central Plains II (Freezing Frost / Celestial Light)",
-    "10 - Mt. Firmament: Frostlands (Celestial Light / Freezing Frost)",
-    "11 - Mt. Firmament: Luminous (Sun-sinking Eclipse / Sierra Gale)",
-    "12 - Mt. Firmament: Memento (Void Thunder / Molten Rift)",
-    "13 - Black Shores #13",
-    "14 - Black Shores #14",
-    "15 - Black Shores #15",
-    "16 - Rinascita #16",
-    "17 - Rinascita #17",
-    "18 - Rinascita #18",
-    "19 - Rinascita #19",
-    "20 - Rinascita #20",
-    "21 - Rinascita #21",
-]
-
-
 class TacetTask(WWOneTimeTask, BaseCombatTask):
 
     def __init__(self, *args, **kwargs):
@@ -41,14 +16,15 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
         self.total_number = sum(self.structure)
         self.target_enemy_time_out = 10
         self.default_config = {
-            'Which Tacet Suppression to Farm': TACET_SUPPRESSIONS[0],
+            'Which Tacet Suppression to Farm': 1,
         }
         self.config_type['Which Tacet Suppression to Farm'] = {
-            'type': 'drop_down',
-            'options': TACET_SUPPRESSIONS,
+            'type': 'int',
+            'min': 1,
+            'max': self.total_number,
         }
         self.config_description = {
-            'Which Tacet Suppression to Farm': 'Select the Tacet Suppression from the F2 list (1-21).',
+            'Which Tacet Suppression to Farm': f'The Tacet Suppression number in the F2 list (1-{self.total_number}).',
         }
         self.door_walk_method = {  # starts with 0
             0: [],
