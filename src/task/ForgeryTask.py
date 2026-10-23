@@ -50,6 +50,7 @@ class ForgeryTask(DomainTask):
                 serial = int(raw_serial)
             except (ValueError, TypeError):
                 serial = 1
+        serial = max(1, min(serial, self.total_number))
 
         def teleport_once():
             self.teleport_into_domain(serial, daily)
@@ -73,8 +74,8 @@ class ForgeryTask(DomainTask):
     def teleport_into_domain(self, serial_number, daily=False):
         self.open_boss_book('ningsu')
         self.info_set('Teleport to Forgery Challenge', serial_number - 1)
-        if serial_number > self.total_number:
-            raise IndexError(f'Index out of range, max is {self.total_number}')
+        if serial_number < 1 or serial_number > self.total_number:
+            raise IndexError(f'Index out of range (1-{self.total_number}), got {serial_number}')
         self.click_on_book_target(serial_number, self.total_number, self.structure)
         self.click(0.891, 0.910, after_sleep=1)
         self.click_team_challenge()

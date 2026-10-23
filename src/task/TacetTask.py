@@ -78,6 +78,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                     index = int(raw_target) - 1
                 except (ValueError, TypeError):
                     index = 0
+            index = max(0, min(index, self.total_number - 1))
             self.teleport_to_tacet(index)
             self.click_team_challenge()
             while True:
@@ -119,6 +120,6 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
 
     def teleport_to_tacet(self, index):
         self.info_set('Teleport to Tacet Suppression', index)
-        if index >= self.total_number:
-            raise IndexError(f'Index out of range, max is {self.total_number}')
+        if index < 0 or index >= self.total_number:
+            raise IndexError(f'Index out of range (0-{self.total_number - 1}), got {index}')
         return self.click_on_book_target(index + 1, self.total_number, self.structure)

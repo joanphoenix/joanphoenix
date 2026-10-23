@@ -17,6 +17,15 @@ class TestF2ChallengeSelection(unittest.TestCase):
         self.assertEqual(config_type['min'], 1)
         self.assertEqual(config_type['max'], 20)
 
+    def test_forgery_bounds(self):
+        task = ForgeryTask(MagicMock(), MagicMock())
+        task.open_boss_book = MagicMock()
+        task.info_set = MagicMock()
+        with self.assertRaises(IndexError):
+            task.teleport_into_domain(0)
+        with self.assertRaises(IndexError):
+            task.teleport_into_domain(21)
+
     def test_tacet_task_config_and_types(self):
         task = TacetTask(MagicMock(), MagicMock())
         self.assertEqual(task.total_number, 21)
@@ -25,6 +34,14 @@ class TestF2ChallengeSelection(unittest.TestCase):
         self.assertEqual(config_type['type'], 'int')
         self.assertEqual(config_type['min'], 1)
         self.assertEqual(config_type['max'], 21)
+
+    def test_tacet_bounds(self):
+        task = TacetTask(MagicMock(), MagicMock())
+        task.info_set = MagicMock()
+        with self.assertRaises(IndexError):
+            task.teleport_to_tacet(-1)
+        with self.assertRaises(IndexError):
+            task.teleport_to_tacet(21)
 
     def test_daily_task_config_and_types(self):
         task = DailyTask(MagicMock(), MagicMock())
