@@ -77,6 +77,8 @@ class TestF2ChallengeSelection(unittest.TestCase):
                 self.assertIsNotNone(w)
                 if 'Which Forgery Challenge' in k or 'Which Tacet Suppression' in k:
                     self.assertIsInstance(w, LabelAndSpinBox)
+                    w.spin_box.resize(180, 33)
+                    self.assertGreaterEqual(w.spin_box.lineEdit().geometry().width(), 80)
 
 
 if __name__ == '__main__':

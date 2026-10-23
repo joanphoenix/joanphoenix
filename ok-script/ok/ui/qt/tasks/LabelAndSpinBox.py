@@ -1,13 +1,31 @@
-from PySide6.QtCore import QObject, QEvent, QTimer
+from PySide6.QtCore import QObject, QEvent, QTimer, QRect
 from qfluentwidgets import SpinBox
 
 from ok.ui.qt.common.design_system import DesignToken
 from ok.ui.qt.tasks.ConfigLabelAndWidget import ConfigLabelAndWidget
 
 
+def fix_spinbox_layout(spin_box):
+    """Fix macOS Qt QStyleSheetStyle bug where QAbstractSpinBox shrinks lineEdit to 1px."""
+    def _update_geom():
+        w = spin_box.width() if spin_box.width() > 1 else DesignToken.CONTROL_WIDTH
+        h = spin_box.height() if spin_box.height() > 1 else 33
+        spin_box.lineEdit().setGeometry(QRect(10, 1, max(10, w - 85), max(10, h - 2)))
+
+    orig_resize = spin_box.resizeEvent
+    def resize_event(e):
+        orig_resize(e)
+        _update_geom()
+
+    spin_box.resizeEvent = resize_event
+    _update_geom()
+
+
 class _SpinBoxFocusFilter(QObject):
     def eventFilter(self, obj, event):
-        if event.type() in (QEvent.FocusIn, QEvent.MouseButtonPress):
+        if event.type() == QEvent.FocusIn:
+            QTimer.singleShot(0, obj.selectAll)
+        elif event.type() == QEvent.MouseButtonPress and not obj.hasFocus():
             QTimer.singleShot(0, obj.selectAll)
         return False
 
@@ -38,6 +56,9 @@ class LabelAndSpinBox(ConfigLabelAndWidget):
         self.update_value()
         self.spin_box.valueChanged.connect(self.value_changed)
         self.add_widget(self.spin_box)
+
+        # Fix macOS QFluentWidgets lineEdit shrinkage bug (must be after add_widget)
+        fix_spinbox_layout(self.spin_box)
 
     def update_value(self):
         val = self.config.get(self.key)
