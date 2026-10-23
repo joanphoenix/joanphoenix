@@ -46,7 +46,9 @@ def init_app_config():
 
         qss_mod.getStyleSheetFromFile = mac_get_stylesheet_from_file
 
-    app = QApplication(sys.argv)
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication(sys.argv)
     app.setAttribute(Qt.AA_EnableHighDpiScaling)
     app.setAttribute(Qt.AA_UseHighDpiPixmaps)
     app.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings)

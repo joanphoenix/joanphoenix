@@ -42,3 +42,4 @@ def destroy_ok():
     global ok
     if ok is not None:
         ok.quit()
+        ok = None

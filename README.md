@@ -1,6 +1,6 @@
 # ok-wuthering-waves-macos-port
 
-Native **macOS Apple Silicon (M1/M2/M3/M4/M5 Pro)** port of the automation tool for *Wuthering Waves* (`ok-wuthering-waves` & `ok-script`).
+Native **macOS Apple Silicon (M1/M2/M3/M4/M5 Pro)** port of the automation tool for *Wuthering Waves* (`ok-wuthering-waves` & `ok-script`). Fully synced with upstream **v3.7.7** (Suoming & Douling trigram combat).
 
 ---
 
@@ -22,6 +22,11 @@ Native **macOS Apple Silicon (M1/M2/M3/M4/M5 Pro)** port of the automation tool 
   - **Capture**: Native `CoreGraphics` / `Quartz` screen capture pipeline replacing Windows BitBlt/GDI/WGC.
   - **Inference**: YOLOv8 and PaddleOCR inference running natively on Apple Silicon Metal / CoreML.
   - **Process Detection**: Direct integration with the native macOS client (`Client-Mac-Shipping`).
+
+- **Upstream Gameplay & Character Support (v3.7.7)**:
+  - Full support for **Suoming (锁瞑)** with heavy attack rotation and burst sequences.
+  - Dynamic Trigram (卦象栏) detection for **Douling (卜灵)** charged attacks.
+  - Safe auto-combat state resets across disable/restart and healer switch lockout fallbacks.
 
 ---
 

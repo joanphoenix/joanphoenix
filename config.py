@@ -165,6 +165,7 @@ key_config_option = ConfigOption('Game Hotkey', {
 char_config_option = ConfigOption('Character Config', {
     'Iuno C6': False,
     'Chisa DPS': False,
+    'Suoming DPS': False,
 }, description='Character Config', show_at_tab=True, icon=Icon.PEOPLE)
 
 monthly_card_config_option = ConfigOption('Monthly Card Config', {
@@ -222,9 +223,10 @@ config = {
         'exe': ['Client-Mac-Shipping', 'Client-Win64-Shipping.exe'] if sys.platform == 'darwin' else 'Client-Win64-Shipping.exe',
         'hwnd_class': None if sys.platform == 'darwin' else 'UnrealWindow',
         'interaction': 'PostMessage',
-        'capture_method': ['WGC', 'BitBlt_RenderFull'],  # Windows版本支持的话, 优先使用WGC, 否则使用BitBlt_Full
+        'capture_method': ['WGC', 'WGC_HDR', 'BitBlt_RenderFull'],  # Windows版本支持的话, 优先使用WGC, 否则使用BitBlt_Full
         'check_hdr': False,
         'force_no_hdr': False,
+        'check_auto_hdr': sys.platform == 'win32',
         'check_night_light': sys.platform == 'win32',
         'force_no_night_light': False,
     },

@@ -663,6 +663,7 @@ class OK:
         import pyappify
         from ok.util.config import Config
 
+        self.exit_event = ExitEvent()
         self.config = config
         ui_config = resolve_ui_config(config)
         if ui_config is not None and ui_config["type"] == "web":
