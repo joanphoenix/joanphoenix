@@ -35,13 +35,14 @@ class TestTacetDeathReentry(unittest.TestCase):
 
     def make_task(self, deaths):
         task = TacetTask.__new__(TacetTask)
+        task.total_number = 21
         task.stamina_once = 60
         task.teleports = []
         task.logs = []
         task.combat_once, task.combat_calls = combat_results(deaths)
         noop = lambda *args, **kwargs: None
         for name in ('info_incr', 'sleep', 'openF2Book', 'click_relative', 'open_boss_book',
-                     'click_team_challenge', 'wait_in_team_and_world', 'walk_to_treasure', 'pick_f',
+                     'click_team_challenge', 'wait_click_travel', 'wait_in_team_and_world', 'walk_to_treasure', 'pick_f',
                      'wait_click_skip_dialog_confirm'):
             setattr(task, name, noop)
         task.get_stamina = lambda: (120, 0, 120)

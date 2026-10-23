@@ -35,6 +35,64 @@ class TestF2ChallengeSelection(unittest.TestCase):
         self.assertEqual(config_type['min'], 1)
         self.assertEqual(config_type['max'], 21)
 
+    def test_open_boss_book_coords_and_tab_mapping(self):
+        from src.task.BaseWWTask import BaseWWTask
+        from ok import Box
+
+        task = BaseWWTask.__new__(BaseWWTask)
+        task.log_info = MagicMock()
+        task.log_debug = MagicMock()
+        task.sleep = MagicMock()
+        task.click_relative = MagicMock()
+        task.click_box = MagicMock()
+        task.ocr = MagicMock(return_value=[])  # No OCR match -> test fallback coordinates
+
+        expected_coords = {
+            'moni': (0.24, 0.24),      # Row 2: Simulation Challenge
+            'ningsu': (0.24, 0.34),    # Row 3: Forgery Challenge
+            'qiangdi': (0.24, 0.44),   # Row 4: Boss Challenge
+            'zhange': (0.24, 0.54),    # Row 5: Weekly Challenge
+            'wuyin': (0.24, 0.64),     # Row 6: Tacet Suppression
+            'canxiang': (0.24, 0.74),  # Row 7: Tacet Discord Nest
+            'mengyan': (0.24, 0.84),   # Row 8: Nightmare Purification
+        }
+
+        for name, (ex_x, ex_y) in expected_coords.items():
+            task.click_relative.reset_mock()
+            task.open_boss_book(name)
+            task.click_relative.assert_called_once_with(ex_x, ex_y, after_sleep=2, name=name)
+
+        # Test OCR dynamic match
+        mock_box = Box(100, 600, 200, 50, name='Tacet Suppression')
+        task.ocr = MagicMock(return_value=[mock_box])
+        task.click_box.reset_mock()
+        task.open_boss_book('wuyin')
+        task.click_box.assert_called_once_with(mock_box, after_sleep=2)
+
+    def test_tacet_task_fast_travel_vs_team(self):
+        task = TacetTask(MagicMock(), MagicMock())
+        task.ensure_main = MagicMock()
+        task.wait_in_team_and_world = MagicMock()
+        task.openF2Book = MagicMock()
+        task.get_stamina = MagicMock(side_effect=[(120, 0, 120), (0, 0, 0)])
+        task.open_boss_book = MagicMock()
+        task.teleport_to_tacet = MagicMock(return_value=False)  # open world fast travel
+        task.wait_click_travel = MagicMock()
+        task.click_team_challenge = MagicMock()
+        task.combat_once = MagicMock()
+        task.walk_to_treasure = MagicMock()
+        task.pick_f = MagicMock()
+        task.has_claim_stamina = MagicMock(return_value=True)
+        task.use_stamina = MagicMock(return_value=(False, 60))
+        task.info_incr = MagicMock()
+        task.click_relative = MagicMock()
+        task.not_enough_stamina = MagicMock()
+
+        task.farm_tacet()
+        task.teleport_to_tacet.assert_called_once()
+        task.wait_click_travel.assert_called_once()
+        task.click_team_challenge.assert_not_called()
+
     def test_tacet_bounds(self):
         task = TacetTask(MagicMock(), MagicMock())
         task.info_set = MagicMock()

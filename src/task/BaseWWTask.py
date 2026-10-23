@@ -992,26 +992,59 @@ class BaseWWTask(BaseTask):
 
     def open_boss_book(self, name, after_sleep=2):
         self.log_info(f'open_boss_book {name}')
-        x = 0.24
         self.sleep(0.4)
-        if name == 'ningsu':
-            y = 0.4
-        elif name == 'moni':
-            y = 0.3
-        elif name == 'qiangdi':
-            y = 0.49
-        elif name == 'wuyin':
-            y = 0.73
-        elif name == 'zhange':
-            y = 0.61
-        elif name == 'canxiang':
-            y = 0.83
-        elif name == 'mengyan':
-            self.click_relative(0.356, 0.882, after_sleep=after_sleep)
-            y = 0.86
+
+        # Tab keywords for OCR targeting in Material Collection / Periodic Challenges menu
+        tab_keywords = {
+            'moni': ['Simulation Challenge', '模拟领域'],
+            'ningsu': ['Forgery Challenge', '凝素领域'],
+            'qiangdi': ['Boss Challenge', '强敌讨伐'],
+            'zhange': ['Weekly Challenge', '战歌重奏'],
+            'wuyin': ['Tacet Suppression', '无音清剿'],
+            'canxiang': ['Tacet Discord Nest', '残象巢穴'],
+            'mengyan': ['Nightmare Purification', '梦魇净化'],
+        }
+
+        # Calibrated coordinates (Material Collection menu has 8 rows of height ~0.10):
+        # Row 1: Focus Resonator (~0.14)
+        # Row 2: Simulation Challenge (~0.24)
+        # Row 3: Forgery Challenge (~0.34)
+        # Row 4: Boss Challenge (~0.44)
+        # Row 5: Weekly Challenge (~0.54)
+        # Row 6: Tacet Suppression (~0.64)
+        # Row 7: Tacet Discord Nest (~0.74)
+        # Row 8: Nightmare Purification (~0.84)
+        fallback_coords = {
+            'moni': (0.24, 0.24),
+            'ningsu': (0.24, 0.34),
+            'qiangdi': (0.24, 0.44),
+            'zhange': (0.24, 0.54),
+            'wuyin': (0.24, 0.64),
+            'canxiang': (0.24, 0.74),
+            'mengyan': (0.24, 0.84),
+        }
+
+        target_box = None
+        keywords = tab_keywords.get(name, [])
+        if keywords:
+            try:
+                ocr_boxes = self.ocr(0.10, 0.10, 0.35, 0.95)
+                if ocr_boxes:
+                    for box in ocr_boxes:
+                        if any(kw.lower() in box.name.lower() for kw in keywords):
+                            target_box = box
+                            self.log_info(f'open_boss_book {name} matched OCR box: {box.name} at ({box.x}, {box.y})')
+                            break
+            except Exception as e:
+                self.log_debug(f'open_boss_book OCR lookup skipped: {e}')
+
+        if target_box:
+            self.click_box(target_box, after_sleep=after_sleep)
+        elif name in fallback_coords:
+            x, y = fallback_coords[name]
+            self.click_relative(x, y, after_sleep=after_sleep, name=name)
         else:
             raise Exception(f'unknown_lang {name}')
-        self.click_relative(x, y, after_sleep=after_sleep, name=name)
 
     def openF2Book(self, feature="gray_book_all_monsters"):
         if hasattr(self, 'reset_to_false'):

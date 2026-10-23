@@ -50,7 +50,7 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
 
     def farm_tacet(self, daily=False, used_stamina=0, config=None, max_recovery_retries=3):
         if config is None:
-            config = self.config
+            config = self.config or self.default_config
         if daily:
             must_use = 180 - used_stamina
         else:
@@ -78,9 +78,13 @@ class TacetTask(WWOneTimeTask, BaseCombatTask):
                     index = int(raw_target) - 1
                 except (ValueError, TypeError):
                     index = 0
-            index = max(0, min(index, self.total_number - 1))
-            self.teleport_to_tacet(index)
-            self.click_team_challenge()
+            total_num = getattr(self, 'total_number', 21)
+            index = max(0, min(index, total_num - 1))
+            is_team = self.teleport_to_tacet(index)
+            if not is_team:
+                self.wait_click_travel()
+            else:
+                self.click_team_challenge()
             while True:
                 self.wait_in_team_and_world(time_out=120)
                 try:
