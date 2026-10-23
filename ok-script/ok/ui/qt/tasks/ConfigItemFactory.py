@@ -47,8 +47,14 @@ def config_widget(config_type, config_desc, config, key, value, task):
             if not buttons:
                 buttons = [the_type]
             return LabelAndButtons(config_desc, key, buttons)
+        elif resolved_type in ('int', 'integer', 'spin_box'):
+            return LabelAndSpinBox(config_desc, config, key, the_type)
+        elif resolved_type in ('float', 'double', 'double_spin_box'):
+            return LabelAndDoubleSpinBox(config_desc, config, key)
+        elif resolved_type in ('bool', 'boolean', 'switch'):
+            return LabelAndSwitchButton(config_desc, config, key)
         else:
-            raise Exception('Unknown config type')
+            raise Exception(f'Unknown config type: {resolved_type}')
     if isinstance(value, bool):
         return LabelAndSwitchButton(config_desc, config, key)
     elif isinstance(value, list):

@@ -54,6 +54,30 @@ class TestF2ChallengeSelection(unittest.TestCase):
         self.assertEqual(task.config_type['Which Tacet Suppression to Farm']['min'], 1)
         self.assertEqual(task.config_type['Which Tacet Suppression to Farm']['max'], 21)
 
+    def test_config_widgets_instantiation(self):
+        import sys
+        from PySide6.QtWidgets import QApplication
+        from ok import og
+        from ok.ui.qt.tasks.ConfigItemFactory import config_widget
+        from ok.ui.qt.tasks.LabelAndSpinBox import LabelAndSpinBox
+
+        app = QApplication(sys.argv) if not QApplication.instance() else QApplication.instance()
+        og.app = app
+
+        class MockConfig(dict):
+            def get_default(self, k):
+                return self.get(k)
+
+        for task in (ForgeryTask(MagicMock(), MagicMock()),
+                     TacetTask(MagicMock(), MagicMock()),
+                     DailyTask(MagicMock(), MagicMock())):
+            cfg = MockConfig(task.default_config)
+            for k in task.default_config:
+                w = config_widget(task.config_type, task.config_description, cfg, k, task.default_config[k], task)
+                self.assertIsNotNone(w)
+                if 'Which Forgery Challenge' in k or 'Which Tacet Suppression' in k:
+                    self.assertIsInstance(w, LabelAndSpinBox)
+
 
 if __name__ == '__main__':
     unittest.main()

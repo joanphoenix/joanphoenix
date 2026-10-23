@@ -93,6 +93,12 @@ def build_config_fields(config, descriptions=None, config_types=None, defaults=N
             kind = "file"
         elif resolved == "line_edit":
             kind = "text"
+        elif resolved in {"int", "integer", "spin_box"}:
+            kind = "integer"
+        elif resolved in {"float", "double", "double_spin_box", "number"}:
+            kind = "number"
+        elif resolved in {"bool", "boolean", "switch"}:
+            kind = "boolean"
         elif isinstance(default, bool):
             kind = "boolean"
         elif isinstance(default, int):
