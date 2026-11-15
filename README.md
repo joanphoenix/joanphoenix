@@ -1,16 +1,16 @@
-## Hi there 👋
+# Hi, I'm Joan 👋
 
-<!--
-**joanphoenix/joanphoenix** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+From Orocovis, Puerto Rico 🇵🇷. I tinker with code in my free time, mostly Python.
 
-Here are some ideas to get you started:
+## What I'm into
+- 🚴 Gravel and indoor cycling (Zwift, power-based training)
+- 🎮 Wuthering Waves
+- 🎧 Audio gear and 📱 phones
+- 🤖 AI tools and automation
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+## Projects
+- [ok-wuthering-waves-macos-port](https://github.com/joanphoenix/ok-wuthering-waves-macos-port): a macOS port of the ok-wuthering-waves automation tool (Python)
+- [college](https://github.com/joanphoenix/college): coursework from college (Python)
+
+## Tech
+Python · macOS · Git
